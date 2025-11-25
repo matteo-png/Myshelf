@@ -1,0 +1,32 @@
+
+services:
+  db:
+    image: postgres:16
+    container_name: myshelf-db
+    environment:
+      POSTGRES_DB: myshelf
+      POSTGRES_USER: myshelf
+      POSTGRES_PASSWORD: myshelf
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: myshelf-backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myshelf
+      SPRING_DATASOURCE_USERNAME: myshelf
+      SPRING_DATASOURCE_PASSWORD: myshelf
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update   # pour démarrer
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+
+volumes:
+  db-data:
