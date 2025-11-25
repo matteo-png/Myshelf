@@ -39,10 +39,3 @@ build/
 # Maven
 backend/target/
 backend/.mvn/
-
-# Spring Boot generated configs
-backend/application-docker.properties
-backend/application.properties
-backend/src/main/resources/application-docker.properties
-backend/src/main/resources/application.properties
-

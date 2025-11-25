@@ -1,5 +1,5 @@
 package com.myshelf.apiMyshelf;
-
+/* 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -54,3 +54,4 @@ public class DemoDataConfig {
         };
     }
 }
+*/
