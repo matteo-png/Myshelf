@@ -23,7 +23,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/myshelf
       SPRING_DATASOURCE_USERNAME: myshelf
       SPRING_DATASOURCE_PASSWORD: myshelf
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update   # pour démarrer
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_PROFILES_ACTIVE: docker
     ports:
       - "8080:8080"

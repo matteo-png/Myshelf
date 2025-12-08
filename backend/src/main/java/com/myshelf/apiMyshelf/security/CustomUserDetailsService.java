@@ -27,7 +27,7 @@ private final UserRepository userRepository;
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPasswordHash(),
-                Collections.emptyList() // pas de rôles pour l'instant
+                Collections.emptyList()
         );
     }
 }
