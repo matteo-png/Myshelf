@@ -9,5 +9,5 @@ import com.myshelf.apiMyshelf.model.User;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    List<Category> findByOwnerOrOwnerIsNull(User owner);
+    List<Category> findByOwner(User owner);
 }
