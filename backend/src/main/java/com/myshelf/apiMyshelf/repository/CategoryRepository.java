@@ -10,4 +10,7 @@ import com.myshelf.apiMyshelf.model.User;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findByOwner(User owner);
+    
+    long countByOwnerEmail(String email);
+
 }

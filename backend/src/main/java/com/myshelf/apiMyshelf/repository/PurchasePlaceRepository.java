@@ -10,4 +10,7 @@ import com.myshelf.apiMyshelf.model.User;
 public interface PurchasePlaceRepository extends JpaRepository<PurchasePlace, Long> {
 
     List<PurchasePlace> findByOwner(User owner);
+
+    long countByOwnerEmail(String email);
+
 }
