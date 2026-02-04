@@ -3,7 +3,6 @@ package com.myshelf.apiMyshelf.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -13,32 +12,22 @@ import com.myshelf.apiMyshelf.model.Item;
 import com.myshelf.apiMyshelf.model.Tag;
 import com.myshelf.apiMyshelf.model.User;
 import com.myshelf.apiMyshelf.repository.TagRepository;
-import com.myshelf.apiMyshelf.repository.UserRepository;
+import com.myshelf.apiMyshelf.security.CurrentUserService;
 
 @Service
 public class TagService {
 
     private final TagRepository tagRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public TagService(TagRepository tagRepository,
-                      UserRepository userRepository) {
+                      CurrentUserService currentUserService) {
         this.tagRepository = tagRepository;
-        this.userRepository = userRepository;
-    }
-
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        this.currentUserService = currentUserService;
     }
 
     private Tag getUserTagOrThrow(Long id) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return tagRepository.findById(id)
                 .filter(t -> t.getOwner() != null && t.getOwner().getId().equals(user.getId()))
                 .orElseThrow(() ->
@@ -59,7 +48,7 @@ public class TagService {
 
     // GET /api/tags
     public List<TagResponse> getMyTags() {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return tagRepository.findByOwner(user)
                 .stream()
                 .map(this::toResponse)
@@ -74,7 +63,7 @@ public class TagService {
 
     // POST /api/tags
     public TagResponse createTag(TagRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
 
         Tag tag = Tag.builder()
                 .name(request.getName())

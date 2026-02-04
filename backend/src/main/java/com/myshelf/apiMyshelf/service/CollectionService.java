@@ -3,7 +3,6 @@ package com.myshelf.apiMyshelf.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -12,32 +11,22 @@ import com.myshelf.apiMyshelf.dto.collection.CollectionResponse;
 import com.myshelf.apiMyshelf.model.Collection;
 import com.myshelf.apiMyshelf.model.User;
 import com.myshelf.apiMyshelf.repository.CollectionRepository;
-import com.myshelf.apiMyshelf.repository.UserRepository;
+import com.myshelf.apiMyshelf.security.CurrentUserService;
 
 @Service
 public class CollectionService {
 
     private final CollectionRepository collectionRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public CollectionService(CollectionRepository collectionRepository,
-                             UserRepository userRepository) {
+                             CurrentUserService currentUserService) {
         this.collectionRepository = collectionRepository;
-        this.userRepository = userRepository;
-    }
-
-    // Récupérer le user à partir du token JWT
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        this.currentUserService = currentUserService;
     }
 
     private Collection getUserCollectionOrThrow(Long id) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return collectionRepository.findById(id)
                 .filter(c -> c.getOwner().getId().equals(user.getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection not found"));
@@ -57,7 +46,7 @@ public class CollectionService {
 
     // GET /api/collections
     public List<CollectionResponse> getMyCollections() {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return collectionRepository.findByOwner(user)
                 .stream()
                 .map(this::toResponse)
@@ -72,7 +61,7 @@ public class CollectionService {
 
     // POST /api/collections
     public CollectionResponse createCollection(CollectionRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
 
         Collection collection = Collection.builder()
                 .name(request.getName())

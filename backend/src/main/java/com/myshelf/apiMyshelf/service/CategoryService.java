@@ -3,7 +3,6 @@ package com.myshelf.apiMyshelf.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,35 +13,25 @@ import com.myshelf.apiMyshelf.model.Item;
 import com.myshelf.apiMyshelf.model.User;
 import com.myshelf.apiMyshelf.repository.CategoryRepository;
 import com.myshelf.apiMyshelf.repository.ItemRepository;
-import com.myshelf.apiMyshelf.repository.UserRepository;
+import com.myshelf.apiMyshelf.security.CurrentUserService;
 
 @Service
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final ItemRepository itemRepository;
 
     public CategoryService(CategoryRepository categoryRepository,
-                           UserRepository userRepository,
+                           CurrentUserService currentUserService,
                            ItemRepository itemRepository) {
         this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
         this.itemRepository = itemRepository;
     }
 
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-    }
-
     private Category getUserCategoryOrThrow(Long id) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return categoryRepository.findById(id)
                 .filter(c -> c.getOwner() != null && c.getOwner().getId().equals(user.getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
@@ -59,7 +48,7 @@ public class CategoryService {
 
     // GET /api/categories
     public List<CategoryResponse> getMyCategories() {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return categoryRepository.findByOwner(user)
                 .stream()
                 .map(this::toResponse)
@@ -74,7 +63,7 @@ public class CategoryService {
 
     // POST /api/categories
     public CategoryResponse createCategory(CategoryRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
 
         Category category = Category.builder()
                 .name(request.getName())

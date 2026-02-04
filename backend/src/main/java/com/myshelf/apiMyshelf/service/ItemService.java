@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,7 +24,7 @@ import com.myshelf.apiMyshelf.repository.CollectionRepository;
 import com.myshelf.apiMyshelf.repository.ItemRepository;
 import com.myshelf.apiMyshelf.repository.PurchasePlaceRepository;
 import com.myshelf.apiMyshelf.repository.TagRepository;
-import com.myshelf.apiMyshelf.repository.UserRepository;
+import com.myshelf.apiMyshelf.security.CurrentUserService;
 
 @Service
 public class ItemService {
@@ -35,39 +34,32 @@ private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
     private final PurchasePlaceRepository purchasePlaceRepository;
     private final TagRepository tagRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public ItemService(ItemRepository itemRepository,
                        CollectionRepository collectionRepository,
                        CategoryRepository categoryRepository,
                        PurchasePlaceRepository purchasePlaceRepository,
                        TagRepository tagRepository,
-                       UserRepository userRepository) {
+                       CurrentUserService currentUserService) {
         this.itemRepository = itemRepository;
         this.collectionRepository = collectionRepository;
         this.categoryRepository = categoryRepository;
         this.purchasePlaceRepository = purchasePlaceRepository;
         this.tagRepository = tagRepository;
-        this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
-    // --- helpers ---
-
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-    }
 
     private Collection getUserCollectionOrThrow(Long collectionId) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return collectionRepository.findById(collectionId)
                 .filter(c -> c.getOwner().getId().equals(user.getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection not found"));
     }
 
     private Item getUserItemOrThrow(Long itemId) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return itemRepository.findById(itemId)
                 .filter(i -> i.getCollection().getOwner().getId().equals(user.getId()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
@@ -122,7 +114,7 @@ private final ItemRepository itemRepository;
 
     // GET /api/items?collectionId=...
     public List<ItemResponse> getItems(Long collectionId) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
 
         List<Item> items;
         if (collectionId != null) {
@@ -148,7 +140,7 @@ private final ItemRepository itemRepository;
 
     // POST /api/items
     public ItemResponse createItem(ItemRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
 
         Collection collection = getUserCollectionOrThrow(request.getCollectionId());
 
@@ -185,7 +177,7 @@ private final ItemRepository itemRepository;
 
     // PUT /api/items/{id}
     public ItemResponse updateItem(Long id, ItemRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         Item item = getUserItemOrThrow(id);
 
         

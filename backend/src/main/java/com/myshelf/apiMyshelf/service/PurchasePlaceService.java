@@ -3,7 +3,6 @@ package com.myshelf.apiMyshelf.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,36 +13,26 @@ import com.myshelf.apiMyshelf.model.PurchasePlace;
 import com.myshelf.apiMyshelf.model.User;
 import com.myshelf.apiMyshelf.repository.ItemRepository;
 import com.myshelf.apiMyshelf.repository.PurchasePlaceRepository;
-import com.myshelf.apiMyshelf.repository.UserRepository;
+import com.myshelf.apiMyshelf.security.CurrentUserService;
 
 @Service
 public class PurchasePlaceService {
 
 
     private final PurchasePlaceRepository purchasePlaceRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final ItemRepository itemRepository;
 
     public PurchasePlaceService(PurchasePlaceRepository purchasePlaceRepository,
-                                UserRepository userRepository,
+                                CurrentUserService currentUserService,
                                 ItemRepository itemRepository) {
         this.purchasePlaceRepository = purchasePlaceRepository;
-        this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
         this.itemRepository = itemRepository;
     }
 
-    private User getCurrentUser() {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-    }
-
     private PurchasePlace getUserPurchasePlaceOrThrow(Long id) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return purchasePlaceRepository.findById(id)
                 .filter(p -> p.getOwner() != null && p.getOwner().getId().equals(user.getId()))
                 .orElseThrow(() ->
@@ -66,7 +55,7 @@ public class PurchasePlaceService {
 
     // GET /api/purchase-places
     public List<PurchasePlaceResponse> getMyPurchasePlaces() {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
         return purchasePlaceRepository.findByOwner(user)
                 .stream()
                 .map(this::toResponse)
@@ -81,7 +70,7 @@ public class PurchasePlaceService {
 
     // POST /api/purchase-places
     public PurchasePlaceResponse createPurchasePlace(PurchasePlaceRequest request) {
-        User user = getCurrentUser();
+        User user = currentUserService.getCurrentUser();
 
         PurchasePlace place = PurchasePlace.builder()
                 .name(request.getName())
