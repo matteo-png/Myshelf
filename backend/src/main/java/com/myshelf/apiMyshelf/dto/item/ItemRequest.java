@@ -39,6 +39,7 @@ public class ItemRequest {
     private String purchaseUrl;
 
     private ItemStatus status;
+    private Boolean removeFile;
 
     private List<Long> tagIds;  
 }

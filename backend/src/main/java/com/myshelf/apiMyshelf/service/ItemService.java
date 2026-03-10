@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.myshelf.apiMyshelf.dto.item.ItemRequest;
@@ -35,19 +37,22 @@ private final ItemRepository itemRepository;
     private final PurchasePlaceRepository purchasePlaceRepository;
     private final TagRepository tagRepository;
     private final CurrentUserService currentUserService;
+    private final ItemFileStorageService itemFileStorageService;
 
     public ItemService(ItemRepository itemRepository,
                        CollectionRepository collectionRepository,
                        CategoryRepository categoryRepository,
                        PurchasePlaceRepository purchasePlaceRepository,
                        TagRepository tagRepository,
-                       CurrentUserService currentUserService) {
+                       CurrentUserService currentUserService,
+                       ItemFileStorageService itemFileStorageService) {
         this.itemRepository = itemRepository;
         this.collectionRepository = collectionRepository;
         this.categoryRepository = categoryRepository;
         this.purchasePlaceRepository = purchasePlaceRepository;
         this.tagRepository = tagRepository;
         this.currentUserService = currentUserService;
+        this.itemFileStorageService = itemFileStorageService;
     }
 
 
@@ -93,6 +98,9 @@ private final ItemRepository itemRepository;
                 item.getPurchaseDate(),
                 item.getPurchaseUrl(),
                 item.getStatus(),
+                item.getFileName(),
+                item.getFileContentType(),
+                item.getFichierUrl() != null ? buildFileUrl(item.getId()) : null,
                 tags,
                 item.getCreatedAt(),
                 item.getUpdatedAt()
@@ -140,6 +148,10 @@ private final ItemRepository itemRepository;
 
     // POST /api/items
     public ItemResponse createItem(ItemRequest request) {
+        return createItem(request, null);
+    }
+
+    public ItemResponse createItem(ItemRequest request, MultipartFile file) {
         User user = currentUserService.getCurrentUser();
 
         Collection collection = getUserCollectionOrThrow(request.getCollectionId());
@@ -171,12 +183,17 @@ private final ItemRepository itemRepository;
                 .tags(tags)
                 .build();
 
+        attachFileIfPresent(item, file, user);
         Item saved = itemRepository.save(item);
         return toResponse(saved);
     }
 
     // PUT /api/items/{id}
     public ItemResponse updateItem(Long id, ItemRequest request) {
+        return updateItem(id, request, null);
+    }
+
+    public ItemResponse updateItem(Long id, ItemRequest request, MultipartFile file) {
         User user = currentUserService.getCurrentUser();
         Item item = getUserItemOrThrow(id);
 
@@ -213,13 +230,57 @@ private final ItemRepository itemRepository;
         Set<Tag> tags = getTagsForUser(request.getTagIds(), user);
         item.setTags(tags);
 
+        if (Boolean.TRUE.equals(request.getRemoveFile())) {
+            removeFile(item, user);
+        }
+        replaceFileIfPresent(item, file, user);
         Item updated = itemRepository.save(item);
         return toResponse(updated);
     }
 
     // DELETE /api/items/{id}
     public void deleteItem(Long id) {
+        User user = currentUserService.getCurrentUser();
         Item item = getUserItemOrThrow(id);
+        itemFileStorageService.deleteIfExists(item.getFichierUrl(), user.getId());
         itemRepository.delete(item);
+    }
+
+    public Resource getItemFile(Long id) {
+        User user = currentUserService.getCurrentUser();
+        Item item = getUserItemOrThrow(id);
+        if (item.getFichierUrl() == null || item.getFichierUrl().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found");
+        }
+        return itemFileStorageService.loadAsResource(item.getFichierUrl(), user.getId());
+    }
+
+    private void attachFileIfPresent(Item item, MultipartFile file, User user) {
+        ItemFileStorageService.StoredItemFile storedFile = itemFileStorageService.save(user.getId(), file);
+        if (storedFile == null) {
+            return;
+        }
+        item.setFichierUrl(storedFile.storedName());
+        item.setFileName(storedFile.originalName());
+        item.setFileContentType(storedFile.contentType());
+    }
+
+    private void replaceFileIfPresent(Item item, MultipartFile file, User user) {
+        if (file == null || file.isEmpty()) {
+            return;
+        }
+        removeFile(item, user);
+        attachFileIfPresent(item, file, user);
+    }
+
+    private String buildFileUrl(Long itemId) {
+        return itemId == null ? null : "/api/items/" + itemId + "/file";
+    }
+
+    private void removeFile(Item item, User user) {
+        itemFileStorageService.deleteIfExists(item.getFichierUrl(), user.getId());
+        item.setFichierUrl(null);
+        item.setFileName(null);
+        item.setFileContentType(null);
     }
 }

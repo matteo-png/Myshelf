@@ -30,6 +30,9 @@ public class ItemResponse {
     private final LocalDate purchaseDate;
     private final String purchaseUrl;
     private final ItemStatus status;
+    private final String fileName;
+    private final String fileContentType;
+    private final String fileUrl;
 
     private final List<String> tags;
     private final LocalDateTime createdAt;

@@ -54,6 +54,8 @@ public class Item extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private ItemStatus status;
 
+    private String fileName;
+    private String fileContentType;
     private String fichierUrl;
 
     @ManyToMany
