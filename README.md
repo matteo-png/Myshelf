@@ -1,39 +1,102 @@
 # MyShelf
 
-MyShelf est un projet web de gestion d'une collection personnelle d'objets.
+MyShelf est une application web permettant de gérer une collection personnelle d'objets.
 
-Le repository est actuellement organise en deux parties :
+Le projet est composé de deux applications :
 
-- `backend/` : API REST Spring Boot
-- `frontend/` : futur frontend Vue.js
+* **Backend** : API REST développée avec Spring Boot
+* **Frontend** : Application développée avec Vue.js
 
-## Objectif produit
+---
 
-L'application permet a un utilisateur de :
+# Fonctionnalités
 
-- creer un compte et se connecter
-- gerer des collections personnelles
-- ajouter des objets a une collection
-- classer ces objets avec des categories, tags et lieux d'achat
-- consulter des statistiques de collection
-- associer un fichier a un objet, par exemple une facture d'achat
+## Authentification
 
-## Stack technique actuelle
+* Création de compte
+* Connexion avec JWT
+* Endpoints sécurisés avec Spring Security
 
-- Java 21
-- Spring Boot 3
-- Spring Web
-- Spring Data JPA / Hibernate
-- Spring Security
-- JWT
-- PostgreSQL
-- Docker Compose
-- Swagger / OpenAPI
-- JUnit + Spring Test + Testcontainers
+## Gestion des collections
 
-## Demarrage rapide
+* Création, modification et suppression de collections
+* Consultation de ses collections
 
-### Avec Docker
+## Gestion des objets
+
+* Ajout, modification et suppression d'objets
+* Estimation de valeur
+* Date d'achat
+* URL d'achat
+* Statut de l'objet
+
+## Organisation
+
+* Catégories
+* Tags
+* Lieux d'achat
+
+## Statistiques
+
+* Nombre de collections
+* Nombre d'objets
+* Nombre de catégories
+* Nombre de tags
+* Nombre de lieux d'achat
+* Valeur totale estimée
+* Évolution des acquisitions par mois
+* Évolution des acquisitions par année
+
+---
+
+# Stack technique
+
+## Backend
+
+* Java 21
+* Spring Boot 3.5
+* Spring Security
+* Spring Data JPA / Hibernate
+* PostgreSQL
+* JWT
+* Swagger / OpenAPI
+* JUnit 5
+* Mockito
+* Testcontainers
+
+## Frontend
+
+* Vue 3
+* TypeScript
+* Vite
+* Vue Router
+* Pinia
+* Axios
+
+## Infrastructure
+
+* Docker
+* Docker Compose
+
+---
+
+# Structure du projet
+
+```text
+myshelf/
+├── backend/
+├── frontend/
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+# Lancer le projet
+
+## Prérequis
+
+* Docker Desktop
 
 Depuis la racine du projet :
 
@@ -41,30 +104,57 @@ Depuis la racine du projet :
 docker compose up --build
 ```
 
-Services exposes :
+Les services suivants sont démarrés :
 
-- API : `http://localhost:8080`
-- Swagger UI : `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON : `http://localhost:8080/v3/api-docs`
-- PostgreSQL : `localhost:5432`
+| Service     | URL                                   |
+| ----------- | ------------------------------------- |
+| Frontend    | http://localhost:5173                 |
+| Backend API | http://localhost:8080                 |
+| Swagger     | http://localhost:8080/swagger-ui.html |
+| PostgreSQL  | localhost:5432                        |
 
-### Backend seul
+---
 
-Le backend se trouve dans `backend/`.
+# Tests
 
-Prerequis :
+Le backend dispose de plusieurs niveaux de tests :
 
-- Java 21
-- Maven ou Maven Wrapper fonctionnel
-- PostgreSQL
+* Tests unitaires (Mockito)
+* Tests des contrôleurs (MockMvc)
+* Tests des repositories avec PostgreSQL (Testcontainers)
+
+---
+
+# État du projet
+
+## Backend
+
+* Authentification JWT
+* CRUD Collections
+* CRUD Items
+* CRUD Categories
+* CRUD Tags
+* CRUD Purchase Places
+* Statistiques
+* Documentation Swagger
+* Tests
+
+## Frontend
+
+En cours de développement.
+
+Les prochaines étapes sont :
+
+* Authentification
+* Dashboard
+* Gestion des collections
+* Gestion des objets
+* Statistiques
+* Responsive Design
+
+---
 
 ## Documentation
 
-- Vue technique backend : [docs/backend/technical-overview.md]
-- Reference API backend : [docs/backend/api-reference.md]
-
-## Etat du projet
-
-- Backend : en cours de construction
-- Frontend : non demarre dans ce repository
-
+* Vue technique backend : [docs/backend/technical-overview.md]
+* Reference API backend : [docs/backend/api-reference.md]
