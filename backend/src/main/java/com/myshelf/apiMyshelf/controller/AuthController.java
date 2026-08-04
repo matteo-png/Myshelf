@@ -19,6 +19,8 @@ import com.myshelf.apiMyshelf.model.User;
 import com.myshelf.apiMyshelf.repository.UserRepository;
 import com.myshelf.apiMyshelf.service.AuthService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
@@ -34,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
         MessageResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -45,7 +47,7 @@ public class AuthController {
     }
     
     @GetMapping("/me")
-public ResponseEntity<DisplayNameResponse> me() {
+    public ResponseEntity<DisplayNameResponse> me() {
     String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
     User user = userRepository.findByEmail(email)

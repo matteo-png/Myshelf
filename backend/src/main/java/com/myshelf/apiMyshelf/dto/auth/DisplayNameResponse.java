@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class DisplayNameResponse {
-private final String displayname;
+    private String displayName;
 }
