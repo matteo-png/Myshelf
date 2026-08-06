@@ -29,15 +29,20 @@ const statusLabels: Record<ItemStatus, string> = {
   GIVEN: 'Donné',
   OTHER: 'Autre',
 }
-const searchQuery = ref('')
-const selectedCategoryId = ref<number | null>(null)
-const selectedTagId = ref<number | null>(null)
-const selectedPurchasePlaceId = ref<number | null>(null)
-const selectedStatus = ref<ItemStatus | null>(null)
-
 const route = useRoute()
 const router = useRouter()
 const itemStore = useItemStore()
+
+const searchQuery = ref('')
+//const selectedCategoryId = ref<number | null>(null)
+const selectedCategoryId = ref<number | null>(
+  route.query.categoryId
+    ? Number(route.query.categoryId)
+    : null,
+)
+const selectedTagId = ref<number | null>(null)
+const selectedPurchasePlaceId = ref<number | null>(null)
+const selectedStatus = ref<ItemStatus | null>(null)
 
 const collections = ref<Collection[]>([])
 const categories = ref<Category[]>([])
@@ -208,11 +213,20 @@ async function deleteItem() {
   }
 }
 
+// watch(
+//   () => route.query.collectionId,
+//   (collectionId) => {
+//     selectedCollectionId.value = collectionId
+//       ? Number(collectionId)
+//       : null
+//   },
+// )
+
 watch(
-  () => route.query.collectionId,
-  (collectionId) => {
-    selectedCollectionId.value = collectionId
-      ? Number(collectionId)
+  () => route.query.categoryId,
+  (categoryId) => {
+    selectedCategoryId.value = categoryId
+      ? Number(categoryId)
       : null
   },
 )
