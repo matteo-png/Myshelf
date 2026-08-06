@@ -50,16 +50,20 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async initialize() {
-    try {
-      if (this.token) {
-        await this.fetchMe()
-      }
-    } catch {
-      this.logout()
-    } finally {
-      this.initialized = true
-    }
+  if (this.initialized) {
+    return
   }
+
+  try {
+    if (this.token) {
+      await this.fetchMe()
+    }
+  } catch {
+    this.logout()
+  } finally {
+    this.initialized = true
+  }
+}
 
   },
 })

@@ -48,7 +48,7 @@ async function logout() {
             <i class="bi bi-person-circle me-1" aria-hidden="true" />
 
             <span>
-              {{ authStore.displayName ?? 'Mon compte' }}
+              {{ authStore.displayName ?? 'Chargement…' }}
             </span>
           </button>
 
