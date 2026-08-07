@@ -5,3 +5,7 @@ export interface Tag {
   createdAt: string
   updatedAt: string
 }
+
+export interface TagRequest {
+  name: string
+}

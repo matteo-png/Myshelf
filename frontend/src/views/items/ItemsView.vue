@@ -34,13 +34,21 @@ const router = useRouter()
 const itemStore = useItemStore()
 
 const searchQuery = ref('')
-//const selectedCategoryId = ref<number | null>(null)
 const selectedCategoryId = ref<number | null>(
   route.query.categoryId
     ? Number(route.query.categoryId)
     : null,
 )
-const selectedTagId = ref<number | null>(null)
+const selectedTagId = ref<number | null>(
+  route.query.tagId
+    ? Number(route.query.tagId)
+    : null,
+)
+const selectedCollectionId = ref<number | null>(
+  route.query.collectionId
+    ? Number(route.query.collectionId)
+    : null,
+)
 const selectedPurchasePlaceId = ref<number | null>(null)
 const selectedStatus = ref<ItemStatus | null>(null)
 
@@ -51,11 +59,6 @@ const purchasePlaces = ref<PurchasePlace[]>([])
 
 const referencesLoading = ref(false)
 
-const selectedCollectionId = ref<number | null>(
-  route.query.collectionId
-    ? Number(route.query.collectionId)
-    : null,
-)
 
 const formModal = ref<InstanceType<typeof ItemFormModal> | null>(null)
 const formOpen = ref(false)
@@ -213,20 +216,29 @@ async function deleteItem() {
   }
 }
 
-// watch(
-//   () => route.query.collectionId,
-//   (collectionId) => {
-//     selectedCollectionId.value = collectionId
-//       ? Number(collectionId)
-//       : null
-//   },
-// )
+watch(
+  () => route.query.collectionId,
+  (collectionId) => {
+    selectedCollectionId.value = collectionId
+      ? Number(collectionId)
+      : null
+  },
+)
 
 watch(
   () => route.query.categoryId,
   (categoryId) => {
     selectedCategoryId.value = categoryId
       ? Number(categoryId)
+      : null
+  },
+)
+
+watch(
+  () => route.query.tagId,
+  (tagId) => {
+    selectedTagId.value = tagId
+      ? Number(tagId)
       : null
   },
 )
