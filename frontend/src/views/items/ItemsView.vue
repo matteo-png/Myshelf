@@ -49,7 +49,11 @@ const selectedCollectionId = ref<number | null>(
     ? Number(route.query.collectionId)
     : null,
 )
-const selectedPurchasePlaceId = ref<number | null>(null)
+const selectedPurchasePlaceId = ref<number | null>(
+  route.query.purchasePlaceId
+    ? Number(route.query.purchasePlaceId)
+    : null,
+)
 const selectedStatus = ref<ItemStatus | null>(null)
 
 const collections = ref<Collection[]>([])
@@ -243,6 +247,14 @@ watch(
   },
 )
 
+watch(
+  () => route.query.purchasePlaceId,
+  (purchasePlaceId) => {
+    selectedPurchasePlaceId.value = purchasePlaceId
+      ? Number(purchasePlaceId)
+      : null
+  },
+)
 onMounted(async () => {
   await Promise.all([
     itemStore.fetchItems(selectedCollectionId.value),
