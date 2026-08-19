@@ -5,7 +5,9 @@ import DistributionChart from '@/components/dashboard/DistributionChart.vue'
 import MonthlyAcquisitionsChart from '@/components/dashboard/MonthlyAcquisitionsChart.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
 import FormMessage from '@/components/forms/FormMessage.vue'
-
+import CollectionValueChart from '@/components/dashboard/CollectionValueChart.vue'
+import StatusChart from '@/components/dashboard/StatusChart.vue'
+import YearlyAcquisitionsChart from '@/components/dashboard/YearlyAcquisitionsChart.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useStatsStore } from '@/stores/stats.store'
 
@@ -46,36 +48,20 @@ onMounted(async () => {
 <template>
   <section>
     <div class="alert alert-primary d-flex align-items-center">
-      <i
-        class="bi bi-person-check fs-4 me-3"
-        aria-hidden="true"
-      />
+      <i class="bi bi-person-check fs-4 me-3" aria-hidden="true" />
 
       <div>
         <strong>Bienvenue {{ authStore.displayName }}.</strong>
 
-        <div>
-          Voici un aperçu de votre collection personnelle.
-        </div>
+        <div>Voici un aperçu de votre collection personnelle.</div>
       </div>
     </div>
 
-    <FormMessage
-      :message="statsStore.error ?? ''"
-      type="error"
-    />
+    <FormMessage :message="statsStore.error ?? ''" type="error" />
 
-    <div
-      v-if="statsStore.loading"
-      class="d-flex justify-content-center py-5"
-    >
-      <div
-        class="spinner-border text-primary"
-        role="status"
-      >
-        <span class="visually-hidden">
-          Chargement du tableau de bord…
-        </span>
+    <div v-if="statsStore.loading" class="d-flex justify-content-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden"> Chargement du tableau de bord… </span>
       </div>
     </div>
 
@@ -152,18 +138,11 @@ onMounted(async () => {
             class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
           >
             <div>
-              <h2 class="card-title mb-0">
-                Acquisitions par mois
-              </h2>
+              <h2 class="card-title mb-0">Acquisitions par mois</h2>
             </div>
 
             <div>
-              <label
-                for="dashboard-year"
-                class="visually-hidden"
-              >
-                Année
-              </label>
+              <label for="dashboard-year" class="visually-hidden"> Année </label>
 
               <select
                 id="dashboard-year"
@@ -171,11 +150,7 @@ onMounted(async () => {
                 class="form-select"
                 @change="changeYear"
               >
-                <option
-                  v-for="year in availableYears"
-                  :key="year"
-                  :value="year"
-                >
+                <option v-for="year in availableYears" :key="year" :value="year">
                   {{ year }}
                 </option>
               </select>
@@ -184,9 +159,7 @@ onMounted(async () => {
         </div>
 
         <div class="card-body">
-          <MonthlyAcquisitionsChart
-            :points="statsStore.itemsByMonth"
-          />
+          <MonthlyAcquisitionsChart :points="statsStore.itemsByMonth" />
         </div>
       </div>
 
@@ -194,16 +167,11 @@ onMounted(async () => {
         <div class="col-xl-6">
           <div class="card mb-4">
             <div class="card-header">
-              <h2 class="card-title mb-0">
-                Objets par collection
-              </h2>
+              <h2 class="card-title mb-0">Objets par collection</h2>
             </div>
 
             <div class="card-body">
-              <DistributionChart
-                label="Objets"
-                :items="statsStore.itemsByCollection"
-              />
+              <DistributionChart label="Objets" :items="statsStore.itemsByCollection" />
             </div>
           </div>
         </div>
@@ -211,16 +179,63 @@ onMounted(async () => {
         <div class="col-xl-6">
           <div class="card mb-4">
             <div class="card-header">
-              <h2 class="card-title mb-0">
-                Objets par catégorie
-              </h2>
+              <h2 class="card-title mb-0">Objets par catégorie</h2>
             </div>
 
             <div class="card-body">
-              <DistributionChart
-                label="Objets"
-                :items="statsStore.itemsByCategory"
-              />
+              <DistributionChart label="Objets" :items="statsStore.itemsByCategory" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xl-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h2 class="card-title mb-0">Répartition par statut</h2>
+            </div>
+
+            <div class="card-body">
+              <StatusChart :items="statsStore.itemsByStatus" />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h2 class="card-title mb-0">Valeur estimée par collection</h2>
+            </div>
+
+            <div class="card-body">
+              <CollectionValueChart :items="statsStore.itemsByCollection" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xl-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h2 class="card-title mb-0">Objets par lieu d’achat</h2>
+            </div>
+
+            <div class="card-body">
+              <DistributionChart label="Objets" :items="statsStore.itemsByPurchasePlace" />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h2 class="card-title mb-0">Évolution annuelle</h2>
+            </div>
+
+            <div class="card-body">
+              <YearlyAcquisitionsChart :points="statsStore.itemsByYear" />
             </div>
           </div>
         </div>

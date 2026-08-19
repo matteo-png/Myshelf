@@ -7,19 +7,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.myshelf.apiMyshelf.dto.stats.StatsGroupCountResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsOverviewResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsTimeSeriesPointResponse;
+import com.myshelf.apiMyshelf.model.User;
 import com.myshelf.apiMyshelf.repository.CategoryRepository;
 import com.myshelf.apiMyshelf.repository.CollectionRepository;
 import com.myshelf.apiMyshelf.repository.ItemRepository;
 import com.myshelf.apiMyshelf.repository.PurchasePlaceRepository;
 import com.myshelf.apiMyshelf.repository.TagRepository;
+import com.myshelf.apiMyshelf.security.CurrentUserService;
 
 @Service
 public class StatsService {
@@ -29,29 +28,25 @@ public class StatsService {
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final PurchasePlaceRepository purchasePlaceRepository;
+    private final CurrentUserService currentUserService;
 
     public StatsService(ItemRepository itemRepository,
                         CollectionRepository collectionRepository,
                         CategoryRepository categoryRepository,
                         TagRepository tagRepository,
-                        PurchasePlaceRepository purchasePlaceRepository) {
+                        PurchasePlaceRepository purchasePlaceRepository,
+                    CurrentUserService currentUserService) {
         this.itemRepository = itemRepository;
         this.collectionRepository = collectionRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
         this.purchasePlaceRepository = purchasePlaceRepository;
-    }
-
-    private String currentEmail() {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
-        }
-        return auth.getName();
+        this.currentUserService = currentUserService;
     }
 
     public StatsOverviewResponse overview() {
-        String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
 
         long collections = collectionRepository.countByOwnerEmail(email);
         long items = itemRepository.countByOwnerEmail(email);
@@ -74,27 +69,32 @@ public class StatsService {
     }
 
     public List<StatsGroupCountResponse> itemsByCollection() {
-        String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
         return itemRepository.itemsByCollection(email).stream().map(this::mapRow).toList();
     }
 
     public List<StatsGroupCountResponse> itemsByCategory() {
-        String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
         return itemRepository.itemsByCategory(email).stream().map(this::mapRow).toList();
     }
 
     public List<StatsGroupCountResponse> itemsByPurchasePlace() {
-        String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
         return itemRepository.itemsByPurchasePlace(email).stream().map(this::mapRow).toList();
     }
 
     public List<StatsGroupCountResponse> itemsByStatus() {
-        String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
         return itemRepository.itemsByStatus(email).stream().map(this::mapRow).toList();
     }
 
     public List<StatsTimeSeriesPointResponse> itemsByYear() {
-    String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
 
     return itemRepository.itemsByYear(email).stream()
             .map(row -> new StatsTimeSeriesPointResponse(
@@ -106,7 +106,8 @@ public class StatsService {
     }   
 
     public List<StatsTimeSeriesPointResponse> itemsByMonth(int year) {
-    String email = currentEmail();
+        User user = currentUserService.getCurrentUser();
+        String email = user.getEmail();
 
     // Résultats DB (uniquement les mois présents)
     Map<String, StatsTimeSeriesPointResponse> fromDb = new HashMap<>();
