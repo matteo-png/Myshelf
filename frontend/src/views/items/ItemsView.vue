@@ -13,12 +13,7 @@ import { useItemStore } from '@/stores/item.store'
 import type { ValidationErrorResponse } from '@/types/api'
 import type { Category } from '@/types/category'
 import type { Collection } from '@/types/collections'
-import {
-  ITEM_STATUSES,
-  type Item,
-  type ItemRequest,
-  type ItemStatus,
-} from '@/types/items'
+import { ITEM_STATUSES, type Item, type ItemRequest, type ItemStatus } from '@/types/items'
 import type { PurchasePlace } from '@/types/purchase-place'
 import type { Tag } from '@/types/tags'
 
@@ -35,24 +30,14 @@ const itemStore = useItemStore()
 
 const searchQuery = ref('')
 const selectedCategoryId = ref<number | null>(
-  route.query.categoryId
-    ? Number(route.query.categoryId)
-    : null,
+  route.query.categoryId ? Number(route.query.categoryId) : null,
 )
-const selectedTagId = ref<number | null>(
-  route.query.tagId
-    ? Number(route.query.tagId)
-    : null,
-)
+const selectedTagId = ref<number | null>(route.query.tagId ? Number(route.query.tagId) : null)
 const selectedCollectionId = ref<number | null>(
-  route.query.collectionId
-    ? Number(route.query.collectionId)
-    : null,
+  route.query.collectionId ? Number(route.query.collectionId) : null,
 )
 const selectedPurchasePlaceId = ref<number | null>(
-  route.query.purchasePlaceId
-    ? Number(route.query.purchasePlaceId)
-    : null,
+  route.query.purchasePlaceId ? Number(route.query.purchasePlaceId) : null,
 )
 const selectedStatus = ref<ItemStatus | null>(null)
 
@@ -63,7 +48,6 @@ const purchasePlaces = ref<PurchasePlace[]>([])
 
 const referencesLoading = ref(false)
 
-
 const formModal = ref<InstanceType<typeof ItemFormModal> | null>(null)
 const formOpen = ref(false)
 const selectedItem = ref<Item | null>(null)
@@ -73,6 +57,7 @@ const itemToDelete = ref<Item | null>(null)
 
 const successMessage = ref('')
 const localError = ref('')
+const filtersOpen = ref(true)
 
 const deleteMessage = computed(() => {
   if (!itemToDelete.value) {
@@ -138,25 +123,20 @@ async function loadReferenceData() {
   referencesLoading.value = true
 
   try {
-    const [
-      collectionsResponse,
-      categoriesResponse,
-      tagsResponse,
-      placesResponse,
-    ] = await Promise.all([
-      referenceDataService.getCollections(),
-      referenceDataService.getCategories(),
-      referenceDataService.getTags(),
-      referenceDataService.getPurchasePlaces(),
-    ])
+    const [collectionsResponse, categoriesResponse, tagsResponse, placesResponse] =
+      await Promise.all([
+        referenceDataService.getCollections(),
+        referenceDataService.getCategories(),
+        referenceDataService.getTags(),
+        referenceDataService.getPurchasePlaces(),
+      ])
 
     collections.value = collectionsResponse.data
     categories.value = categoriesResponse.data
     tags.value = tagsResponse.data
     purchasePlaces.value = placesResponse.data
   } catch {
-    localError.value =
-      'Impossible de charger les données nécessaires au formulaire.'
+    localError.value = 'Impossible de charger les données nécessaires au formulaire.'
   } finally {
     referencesLoading.value = false
   }
@@ -186,10 +166,7 @@ async function saveItem(data: ItemRequest) {
 
     closeFormModal()
 
-    if (
-      selectedCollectionId.value &&
-      data.collectionId !== selectedCollectionId.value
-    ) {
+    if (selectedCollectionId.value && data.collectionId !== selectedCollectionId.value) {
       await itemStore.fetchItems(selectedCollectionId.value)
     }
   } catch (exception) {
@@ -208,12 +185,9 @@ async function deleteItem() {
     closeDeleteModal()
   } catch (exception) {
     if (axios.isAxiosError<ValidationErrorResponse>(exception)) {
-      localError.value =
-        exception.response?.data?.message ??
-        'Impossible de supprimer cet objet.'
+      localError.value = exception.response?.data?.message ?? 'Impossible de supprimer cet objet.'
     } else {
-      localError.value =
-        'Une erreur inattendue est survenue.'
+      localError.value = 'Une erreur inattendue est survenue.'
     }
 
     closeDeleteModal()
@@ -223,45 +197,33 @@ async function deleteItem() {
 watch(
   () => route.query.collectionId,
   (collectionId) => {
-    selectedCollectionId.value = collectionId
-      ? Number(collectionId)
-      : null
+    selectedCollectionId.value = collectionId ? Number(collectionId) : null
   },
 )
 
 watch(
   () => route.query.categoryId,
   (categoryId) => {
-    selectedCategoryId.value = categoryId
-      ? Number(categoryId)
-      : null
+    selectedCategoryId.value = categoryId ? Number(categoryId) : null
   },
 )
 
 watch(
   () => route.query.tagId,
   (tagId) => {
-    selectedTagId.value = tagId
-      ? Number(tagId)
-      : null
+    selectedTagId.value = tagId ? Number(tagId) : null
   },
 )
 
 watch(
   () => route.query.purchasePlaceId,
   (purchasePlaceId) => {
-    selectedPurchasePlaceId.value = purchasePlaceId
-      ? Number(purchasePlaceId)
-      : null
+    selectedPurchasePlaceId.value = purchasePlaceId ? Number(purchasePlaceId) : null
   },
 )
 onMounted(async () => {
-  await Promise.all([
-    itemStore.fetchItems(selectedCollectionId.value),
-    loadReferenceData(),
-  ])
+  await Promise.all([itemStore.fetchItems(selectedCollectionId.value), loadReferenceData()])
 })
-
 
 const filteredItems = computed(() => {
   const search = searchQuery.value.trim().toLocaleLowerCase('fr-FR')
@@ -277,34 +239,36 @@ const filteredItems = computed(() => {
       item.description?.toLocaleLowerCase('fr-FR').includes(search)
 
     const matchesCategory =
-      selectedCategoryId.value === null ||
-      item.categoryId === selectedCategoryId.value
+      selectedCategoryId.value === null || item.categoryId === selectedCategoryId.value
 
     const matchesPurchasePlace =
       selectedPurchasePlaceId.value === null ||
       item.purchasePlaceId === selectedPurchasePlaceId.value
 
-    const matchesStatus =
-      selectedStatus.value === null ||
-      item.status === selectedStatus.value
+    const matchesStatus = selectedStatus.value === null || item.status === selectedStatus.value
 
     /*
      * ItemResponse contient les noms des tags et non leurs identifiants.
      * On récupère donc le tag sélectionné dans les références,
      * puis on compare son nom avec item.tags.
      */
-    const matchesTag =
-      selectedTag === null ||
-      item.tags.includes(selectedTag.name)
+    const matchesTag = selectedTag === null || item.tags.includes(selectedTag.name)
 
-    return (
-      matchesSearch &&
-      matchesCategory &&
-      matchesPurchasePlace &&
-      matchesStatus &&
-      matchesTag
-    )
+    return matchesSearch && matchesCategory && matchesPurchasePlace && matchesStatus && matchesTag
   })
+})
+
+const activeFiltersCount = computed(() => {
+  let count = 0
+
+  if (searchQuery.value.trim()) count++
+  if (selectedCollectionId.value !== null) count++
+  if (selectedCategoryId.value !== null) count++
+  if (selectedTagId.value !== null) count++
+  if (selectedPurchasePlaceId.value !== null) count++
+  if (selectedStatus.value !== null) count++
+
+  return count
 })
 
 const hasActiveFilters = computed(() => {
@@ -330,7 +294,6 @@ function resetFilters() {
     void changeCollectionFilter()
   }
 }
-
 </script>
 
 <template>
@@ -339,13 +302,9 @@ function resetFilters() {
       class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4"
     >
       <div>
-        <h2 class="h4 mb-1">
-          Mes objets
-        </h2>
+        <h2 class="h4 mb-1">Mes objets</h2>
 
-        <p class="text-secondary mb-0">
-          Consultez et gérez tous les objets de vos collections.
-        </p>
+        <p class="text-secondary mb-0">Consultez et gérez tous les objets de vos collections.</p>
       </div>
 
       <button
@@ -359,28 +318,14 @@ function resetFilters() {
       </button>
     </div>
 
-    <FormMessage
-      :message="successMessage"
-      type="success"
-    />
+    <FormMessage :message="successMessage" type="success" />
 
-    <FormMessage
-      :message="localError || itemStore.error || ''"
-      type="error"
-    />
+    <FormMessage :message="localError || itemStore.error || ''" type="error" />
 
-    <div
-      v-if="collections.length === 0 && !referencesLoading"
-      class="alert alert-warning"
-    >
+    <div v-if="collections.length === 0 && !referencesLoading" class="alert alert-warning">
       Vous devez créer une collection avant de pouvoir ajouter un objet.
 
-      <RouterLink
-        to="/collections"
-        class="alert-link"
-      >
-        Créer une collection
-      </RouterLink>
+      <RouterLink to="/collections" class="alert-link"> Créer une collection </RouterLink>
     </div>
 
     <div class="card">
@@ -388,37 +333,28 @@ function resetFilters() {
         <div
           class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
         >
-          <h3 class="card-title mb-0">
-            Objets
-          </h3>
+          <h3 class="card-title mb-0">Objets</h3>
 
-        <div class="d-flex align-items-center gap-2">
-          <label for="items-search" class="form-label">
-            Recherche
-          </label>
-
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="bi bi-search" aria-hidden="true" />
-            </span>
-
-            <input
-              id="items-search"
-              v-model="searchQuery"
-              type="search"
-              class="form-control"
-              placeholder="Nom..."
-            />
-          </div>
-        </div>
-        
           <div class="d-flex align-items-center gap-2">
-            <label
-              for="items-collection-filter"
-              class="form-label mb-0"
-            >
-              Collection
-            </label>
+            <label for="items-search" class="form-label"> Recherche </label>
+
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-search" aria-hidden="true" />
+              </span>
+
+              <input
+                id="items-search"
+                v-model="searchQuery"
+                type="search"
+                class="form-control"
+                placeholder="Nom..."
+              />
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <label for="items-collection-filter" class="form-label mb-0"> Collection </label>
 
             <select
               id="items-collection-filter"
@@ -426,18 +362,12 @@ function resetFilters() {
               class="form-select"
               @change="changeCollectionFilter"
             >
-              <option :value="null">
-                Toutes les collections
-              </option>
+              <option :value="null">Toutes les collections</option>
 
-              <option
-                v-for="collection in collections"
-                :key="collection.id"
-                :value="collection.id"
-              >
+              <option v-for="collection in collections" :key="collection.id" :value="collection.id">
                 {{ collection.name }}
               </option>
-            </select> 
+            </select>
 
             <span class="badge text-bg-primary">
               {{ filteredItems.length }}
@@ -447,30 +377,18 @@ function resetFilters() {
       </div>
 
       <div class="card-body p-0">
-        <div
-          v-if="itemStore.loading"
-          class="d-flex justify-content-center py-5"
-        >
+        <div v-if="itemStore.loading" class="d-flex justify-content-center py-5">
           <div class="spinner-border text-primary">
-            <span class="visually-hidden">
-              Chargement des objets…
-            </span>
+            <span class="visually-hidden"> Chargement des objets… </span>
           </div>
         </div>
 
-        <div
-          v-else-if="filteredItems.length === 0"
-          class="text-center py-5 px-3"
-        >
+        <div v-else-if="filteredItems.length === 0" class="text-center py-5 px-3">
           <i class="bi bi-box-seam display-4 text-secondary" />
 
-          <h3 class="h5 mt-3">
-            Aucun objet
-          </h3>
+          <h3 class="h5 mt-3">Aucun objet</h3>
 
-          <p class="text-secondary">
-            Ajoutez votre premier objet à une collection.
-          </p>
+          <p class="text-secondary">Ajoutez votre premier objet à une collection.</p>
 
           <button
             v-if="collections.length > 0"
@@ -482,132 +400,106 @@ function resetFilters() {
           </button>
         </div>
 
-        <div
-          v-else
-          class="table-responsive"
-        >
+        <div v-else class="table-responsive">
+          <div class="card mb-4">
+            <div class="card-header">
+              <div class="d-flex align-items-center justify-content-between">
+                <h3 class="card-title mb-0">
+                  <i class="bi bi-funnel me-2" aria-hidden="true" />
+                  Filtres
+                </h3>
+                <span v-if="activeFiltersCount > 0" class="badge text-bg-primary ms-2">
+                  {{ activeFiltersCount }} Filtres actives
+                </span>
+                <div class="d-flex gap-2">
+                  <button
+                    v-if="hasActiveFilters"
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    @click="resetFilters"
+                  >
+                    <i class="bi bi-x-circle me-1" aria-hidden="true" />
+                    Réinitialiser
+                  </button>
 
-        <div class="card mb-4">
-  <div class="card-header">
-    <div class="d-flex align-items-center justify-content-between">
-      <h3 class="card-title mb-0">
-        <i class="bi bi-funnel me-2" aria-hidden="true" />
-        Filtres
-      </h3>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    :aria-expanded="filtersOpen"
+                    @click="filtersOpen = !filtersOpen"
+                  >
+                    <i
+                      class="bi me-1"
+                      :class="filtersOpen ? 'bi-chevron-up' : 'bi-chevron-down'"
+                      aria-hidden="true"
+                    />
 
-      <button
-        v-if="hasActiveFilters"
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        @click="resetFilters"
-      >
-        <i class="bi bi-x-circle me-1" aria-hidden="true" />
-        Réinitialiser
-      </button>
-    </div>
-  </div>
+                    {{ filtersOpen ? 'Masquer' : 'Afficher' }}
+                  </button>
+                </div>
+              </div>
+            </div>
 
-  <div class="card-body">
-    <div class="row g-3">
+            <div v-show="filtersOpen" class="card-body">
+              <div class="row g-3">
+                <div class="col-xl-4 col-md-6">
+                  <label for="items-category-filter" class="form-label"> Catégorie </label>
 
-      <div class="col-xl-4 col-md-6">
-        <label for="items-category-filter" class="form-label">
-          Catégorie
-        </label>
+                  <select
+                    id="items-category-filter"
+                    v-model="selectedCategoryId"
+                    class="form-select"
+                  >
+                    <option :value="null">Toutes les catégories</option>
 
-        <select
-          id="items-category-filter"
-          v-model="selectedCategoryId"
-          class="form-select"
-        >
-          <option :value="null">
-            Toutes les catégories
-          </option>
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                      {{ category.name }}
+                    </option>
+                  </select>
+                </div>
 
-          <option
-            v-for="category in categories"
-            :key="category.id"
-            :value="category.id"
-          >
-            {{ category.name }}
-          </option>
-        </select>
-      </div>
+                <div class="col-xl-4 col-md-6">
+                  <label for="items-tag-filter" class="form-label"> Tag </label>
 
-      <div class="col-xl-4 col-md-6">
-        <label for="items-tag-filter" class="form-label">
-          Tag
-        </label>
+                  <select id="items-tag-filter" v-model="selectedTagId" class="form-select">
+                    <option :value="null">Tous les tags</option>
 
-        <select
-          id="items-tag-filter"
-          v-model="selectedTagId"
-          class="form-select"
-        >
-          <option :value="null">
-            Tous les tags
-          </option>
+                    <option v-for="tag in tags" :key="tag.id" :value="tag.id">
+                      {{ tag.name }}
+                    </option>
+                  </select>
+                </div>
 
-          <option
-            v-for="tag in tags"
-            :key="tag.id"
-            :value="tag.id"
-          >
-            {{ tag.name }}
-          </option>
-        </select>
-      </div>
+                <div class="col-xl-4 col-md-6">
+                  <label for="items-place-filter" class="form-label"> Lieu d’achat </label>
 
-      <div class="col-xl-4 col-md-6">
-        <label for="items-place-filter" class="form-label">
-          Lieu d’achat
-        </label>
+                  <select
+                    id="items-place-filter"
+                    v-model="selectedPurchasePlaceId"
+                    class="form-select"
+                  >
+                    <option :value="null">Tous les lieux d’achat</option>
 
-        <select
-          id="items-place-filter"
-          v-model="selectedPurchasePlaceId"
-          class="form-select"
-        >
-          <option :value="null">
-            Tous les lieux d’achat
-          </option>
+                    <option v-for="place in purchasePlaces" :key="place.id" :value="place.id">
+                      {{ place.name }}
+                    </option>
+                  </select>
+                </div>
 
-          <option
-            v-for="place in purchasePlaces"
-            :key="place.id"
-            :value="place.id"
-          >
-            {{ place.name }}
-          </option>
-        </select>
-      </div>
+                <div class="col-xl-4 col-md-6">
+                  <label for="items-status-filter" class="form-label"> Statut </label>
 
-      <div class="col-xl-4 col-md-6">
-        <label for="items-status-filter" class="form-label">
-          Statut
-        </label>
+                  <select id="items-status-filter" v-model="selectedStatus" class="form-select">
+                    <option :value="null">Tous les statuts</option>
 
-        <select
-          id="items-status-filter"
-          v-model="selectedStatus"
-          class="form-select"
-        >
-          <option :value="null">
-            Tous les statuts
-          </option>
-
-          <option
-            v-for="status in ITEM_STATUSES"
-            :key="status"
-            :value="status"
-          >
-            {{ statusLabels[status] }}
-          </option>
-        </select>
-      </div>
-    </div>
-  </div>
-</div>
+                    <option v-for="status in ITEM_STATUSES" :key="status" :value="status">
+                      {{ statusLabels[status] }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
           <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
@@ -622,19 +514,13 @@ function resetFilters() {
             </thead>
 
             <tbody>
-              <tr
-                v-for="item in filteredItems"
-                :key="item.id"
-              >
+              <tr v-for="item in filteredItems" :key="item.id">
                 <td>
                   <div class="fw-semibold">
                     {{ item.name }}
                   </div>
 
-                  <div
-                    v-if="item.purchasePlaceName"
-                    class="small text-secondary"
-                  >
+                  <div v-if="item.purchasePlaceName" class="small text-secondary">
                     <i class="bi bi-shop me-1" />
                     {{ item.purchasePlaceName }}
                   </div>
@@ -645,16 +531,11 @@ function resetFilters() {
                 </td>
 
                 <td>
-                  <span
-                    v-if="item.categoryName"
-                    class="badge text-bg-secondary"
-                  >
+                  <span v-if="item.categoryName" class="badge text-bg-secondary">
                     {{ item.categoryName }}
                   </span>
 
-                  <span v-else class="text-secondary">
-                    —
-                  </span>
+                  <span v-else class="text-secondary"> — </span>
                 </td>
 
                 <td>
@@ -667,20 +548,11 @@ function resetFilters() {
 
                 <td>
                   <div class="d-flex flex-wrap gap-1">
-                    <span
-                      v-for="tag in item.tags"
-                      :key="tag"
-                      class="badge text-bg-info"
-                    >
+                    <span v-for="tag in item.tags" :key="tag" class="badge text-bg-info">
                       {{ tag }}
                     </span>
 
-                    <span
-                      v-if="item.tags.length === 0"
-                      class="text-secondary"
-                    >
-                      —
-                    </span>
+                    <span v-if="item.tags.length === 0" class="text-secondary"> — </span>
                   </div>
                 </td>
 
