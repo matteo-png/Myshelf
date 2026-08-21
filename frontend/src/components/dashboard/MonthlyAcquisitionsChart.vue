@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Line } from 'vue-chartjs'
-
+import { CHART_PRIMARY, CHART_PRIMARY_BACKGROUND } from '@/constants/chart-colors'
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -39,18 +39,27 @@ const chartData = computed(() => ({
   labels: props.points.map((point) => {
     const [year, month] = point.period.split('-')
 
-    return monthFormatter.format(
-      new Date(Number(year), Number(month) - 1, 1),
-    )
+    return monthFormatter.format(new Date(Number(year), Number(month) - 1, 1))
   }),
 
   datasets: [
     {
       label: 'Nombre d’objets achetés',
       data: props.points.map((point) => point.count),
-      tension: 0.3,
+
+      borderColor: CHART_PRIMARY,
+      backgroundColor: CHART_PRIMARY_BACKGROUND,
+
       fill: true,
-      borderWidth: 2,
+      tension: 0.35,
+
+      pointBackgroundColor: CHART_PRIMARY,
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+
+      borderWidth: 3,
     },
   ],
 }))
@@ -79,10 +88,7 @@ const chartOptions = {
 
 <template>
   <div class="chart-container">
-    <Line
-      :data="chartData"
-      :options="chartOptions"
-    />
+    <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>
 

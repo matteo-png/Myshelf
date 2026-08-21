@@ -19,6 +19,12 @@ const chartData = computed(() => ({
     {
       label: 'Valeur estimée',
       data: props.items.map((item) => item.totalValue),
+
+      backgroundColor: '#198754',
+      borderColor: '#198754',
+
+      borderWidth: 1,
+      borderRadius: 5,
     },
   ],
 }))

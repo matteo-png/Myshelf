@@ -16,6 +16,9 @@ import type { StatsTimeSeriesPoint } from '@/types/stats'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
+const YEARLY_COLOR = '#6f42c1'
+const YEARLY_BACKGROUND = 'rgba(111, 66, 193, 0.15)'
+
 const props = defineProps<{
   points: StatsTimeSeriesPoint[]
 }>()
@@ -27,8 +30,19 @@ const chartData = computed(() => ({
     {
       label: 'Objets acquis',
       data: props.points.map((point) => point.count),
-      tension: 0.3,
-      borderWidth: 2,
+
+      borderColor: YEARLY_COLOR,
+      backgroundColor: YEARLY_BACKGROUND,
+
+      fill: true,
+      tension: 0.35,
+
+      pointBackgroundColor: YEARLY_COLOR,
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+
+      borderWidth: 3,
     },
   ],
 }))

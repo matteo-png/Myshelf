@@ -20,12 +20,26 @@ const statusLabels: Record<string, string> = {
   OTHER: 'Autre',
 }
 
+const statusColors: Record<string, string> = {
+  ACTIVE: '#198754',
+  SOLD: '#0d6efd',
+  LOST: '#dc3545',
+  GIVEN: '#ffc107',
+  OTHER: '#6c757d',
+}
+
 const chartData = computed(() => ({
   labels: props.items.map((item) => statusLabels[item.label] ?? item.label),
 
   datasets: [
     {
       data: props.items.map((item) => item.count),
+
+      backgroundColor: props.items.map((item) => statusColors[item.label] ?? '#6c757d'),
+
+      borderWidth: 2,
+      borderColor: '#ffffff',
+      hoverOffset: 6,
     },
   ],
 }))

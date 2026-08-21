@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
+import { CHART_COLORS } from '@/constants/chart-colors'
 
 import {
   BarElement,
@@ -14,14 +15,7 @@ import {
 
 import type { StatsGroup } from '@/types/stats'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const props = defineProps<{
   label: string
@@ -35,7 +29,11 @@ const chartData = computed(() => ({
     {
       label: props.label,
       data: props.items.map((item) => item.count),
-      borderWidth: 1,
+
+      backgroundColor: props.items.map((_, index) => CHART_COLORS[index % CHART_COLORS.length]),
+
+      borderWidth: 0,
+      borderRadius: 5,
     },
   ],
 }))
@@ -64,10 +62,7 @@ const chartOptions = {
 
 <template>
   <div class="chart-container">
-    <Bar
-      :data="chartData"
-      :options="chartOptions"
-    />
+    <Bar :data="chartData" :options="chartOptions" />
   </div>
 </template>
 
