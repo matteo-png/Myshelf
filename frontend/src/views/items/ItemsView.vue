@@ -16,6 +16,7 @@ import type { Collection } from '@/types/collections'
 import { ITEM_STATUSES, type Item, type ItemRequest, type ItemStatus } from '@/types/items'
 import type { PurchasePlace } from '@/types/purchase-place'
 import type { Tag } from '@/types/tags'
+import { itemService } from '@/services/item.service'
 
 const statusLabels: Record<ItemStatus, string> = {
   ACTIVE: 'Actif',
@@ -154,23 +155,47 @@ async function changeCollectionFilter() {
   await itemStore.fetchItems(selectedCollectionId.value)
 }
 
-async function saveItem(data: ItemRequest) {
+async function saveItem(data: ItemRequest, file: File | null) {
   try {
     if (selectedItem.value) {
-      await itemStore.updateItem(selectedItem.value.id, data)
+      await itemStore.updateItem(selectedItem.value.id, data, file)
+
       successMessage.value = 'L’objet a bien été modifié.'
     } else {
-      await itemStore.createItem(data)
+      await itemStore.createItem(data, file)
+
       successMessage.value = 'L’objet a bien été ajouté.'
     }
 
     closeFormModal()
-
-    if (selectedCollectionId.value && data.collectionId !== selectedCollectionId.value) {
-      await itemStore.fetchItems(selectedCollectionId.value)
-    }
   } catch (exception) {
     formModal.value?.setApiError(exception)
+  }
+}
+
+async function downloadItemFile(item: Item) {
+  if (!item.fileName) {
+    return
+  }
+
+  try {
+    const response = await itemService.downloadFile(item.id)
+
+    const url = URL.createObjectURL(response.data)
+
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = item.fileName
+
+    document.body.appendChild(link)
+
+    link.click()
+    link.remove()
+
+    URL.revokeObjectURL(url)
+  } catch {
+    localError.value = 'Impossible de télécharger le fichier.'
   }
 }
 
@@ -509,6 +534,7 @@ function resetFilters() {
                 <th>Valeur</th>
                 <th>Date d’achat</th>
                 <th>Tags</th>
+                <th>Fichier</th>
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
@@ -554,6 +580,22 @@ function resetFilters() {
 
                     <span v-if="item.tags.length === 0" class="text-secondary"> — </span>
                   </div>
+                </td>
+
+                <td>
+                  <button
+                    v-if="item.fileName"
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    :title="`Télécharger ${item.fileName}`"
+                    @click="downloadItemFile(item)"
+                  >
+                    <i class="bi bi-download me-1" aria-hidden="true" />
+
+                    {{ item.fileName }}
+                  </button>
+
+                  <span v-else class="text-secondary"> — </span>
                 </td>
 
                 <td class="text-end">

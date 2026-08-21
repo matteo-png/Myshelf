@@ -1,10 +1,4 @@
-export const ITEM_STATUSES = [
-  'ACTIVE',
-  'SOLD',
-  'LOST',
-  'GIVEN',
-  'OTHER',
-] as const
+export const ITEM_STATUSES = ['ACTIVE', 'SOLD', 'LOST', 'GIVEN', 'OTHER'] as const
 
 export type ItemStatus = (typeof ITEM_STATUSES)[number]
 
@@ -27,6 +21,10 @@ export interface Item {
   purchaseUrl: string | null
   status: ItemStatus
 
+  fileName: string | null
+  fileContentType: string | null
+  fichierUrl: string | null
+
   tags: string[]
 
   createdAt: string
@@ -46,4 +44,6 @@ export interface ItemRequest {
   status: ItemStatus | null
 
   tagIds: number[]
+
+  removeFile?: boolean
 }

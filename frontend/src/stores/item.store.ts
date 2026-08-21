@@ -32,12 +32,12 @@ export const useItemStore = defineStore('items', {
       }
     },
 
-    async createItem(data: ItemRequest) {
+    async createItem(data: ItemRequest, file?: File | null) {
       this.saving = true
       this.error = null
 
       try {
-        const response = await itemService.create(data)
+        const response = await itemService.create(data, file)
         this.items.push(response.data)
 
         return response.data
@@ -46,12 +46,12 @@ export const useItemStore = defineStore('items', {
       }
     },
 
-    async updateItem(id: number, data: ItemRequest) {
+    async updateItem(id: number, data: ItemRequest, file?: File | null) {
       this.saving = true
       this.error = null
 
       try {
-        const response = await itemService.update(id, data)
+        const response = await itemService.update(id, data, file)
 
         const index = this.items.findIndex((item) => item.id === id)
 
