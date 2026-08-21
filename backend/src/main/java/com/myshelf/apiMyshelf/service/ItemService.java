@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -282,5 +283,18 @@ private final ItemRepository itemRepository;
         item.setFichierUrl(null);
         item.setFileName(null);
         item.setFileContentType(null);
+    }
+
+    public List<ItemResponse> getRecentItems(int limit) {
+    User user = currentUserService.getCurrentUser();
+
+    return itemRepository
+            .findRecentItemsByOwnerEmail(
+                    user.getEmail(),
+                    PageRequest.of(0, limit)
+            )
+            .stream()
+            .map(this::toResponse)
+            .toList();
     }
 }

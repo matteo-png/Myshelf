@@ -1,10 +1,7 @@
 import api from '@/api/axios'
+import type { Item } from '@/types/items'
 
-import type {
-  StatsGroup,
-  StatsOverview,
-  StatsTimeSeriesPoint,
-} from '@/types/stats'
+import type { StatsGroup, StatsOverview, StatsTimeSeriesPoint } from '@/types/stats'
 
 export const statsService = {
   getOverview() {
@@ -35,5 +32,9 @@ export const statsService = {
 
   getItemsByYear() {
     return api.get<StatsTimeSeriesPoint[]>('/stats/items-by-year')
+  },
+
+  getRecentItems() {
+    return api.get<Item[]>('/stats/recent-items')
   },
 }

@@ -2,11 +2,8 @@ import { defineStore } from 'pinia'
 
 import { statsService } from '@/services/stats.service'
 
-import type {
-  StatsGroup,
-  StatsOverview,
-  StatsTimeSeriesPoint,
-} from '@/types/stats'
+import type { StatsGroup, StatsOverview, StatsTimeSeriesPoint } from '@/types/stats'
+import type { Item } from '@/types/items'
 
 function createEmptyOverview(): StatsOverview {
   return {
@@ -30,7 +27,7 @@ export const useStatsStore = defineStore('stats', {
 
     itemsByMonth: [] as StatsTimeSeriesPoint[],
     itemsByYear: [] as StatsTimeSeriesPoint[],
-
+    recentItems: [] as Item[],
     loading: false,
     error: null as string | null,
   }),
@@ -49,6 +46,7 @@ export const useStatsStore = defineStore('stats', {
           statusResponse,
           monthsResponse,
           yearsResponse,
+          recentItems,
         ] = await Promise.all([
           statsService.getOverview(),
           statsService.getItemsByCollection(),
@@ -57,6 +55,7 @@ export const useStatsStore = defineStore('stats', {
           statsService.getItemsByStatus(),
           statsService.getItemsByMonth(year),
           statsService.getItemsByYear(),
+          statsService.getRecentItems(),
         ])
 
         this.overview = overviewResponse.data
@@ -66,9 +65,9 @@ export const useStatsStore = defineStore('stats', {
         this.itemsByStatus = statusResponse.data
         this.itemsByMonth = monthsResponse.data
         this.itemsByYear = yearsResponse.data
+        this.recentItems = recentItems.data
       } catch {
-        this.error =
-          'Impossible de charger les statistiques du tableau de bord.'
+        this.error = 'Impossible de charger les statistiques du tableau de bord.'
       } finally {
         this.loading = false
       }
@@ -81,8 +80,7 @@ export const useStatsStore = defineStore('stats', {
         const response = await statsService.getItemsByMonth(year)
         this.itemsByMonth = response.data
       } catch {
-        this.error =
-          'Impossible de charger les acquisitions pour cette année.'
+        this.error = 'Impossible de charger les acquisitions pour cette année.'
       }
     },
   },

@@ -10,6 +10,9 @@ import StatusChart from '@/components/dashboard/StatusChart.vue'
 import YearlyAcquisitionsChart from '@/components/dashboard/YearlyAcquisitionsChart.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useStatsStore } from '@/stores/stats.store'
+import type { StatsGroup, StatsTimeSeriesPoint } from '@/types/stats'
+import RecentItems from '@/components/dashboard/RecentItems.vue'
+import ChartCard from '@/components/dashboard/ChartCard.vue'
 
 const authStore = useAuthStore()
 const statsStore = useStatsStore()
@@ -43,6 +46,30 @@ async function changeYear() {
 onMounted(async () => {
   await statsStore.fetchDashboard(selectedYear.value)
 })
+
+function hasGroupData(items: StatsGroup[]) {
+  return items.some((item) => item.count > 0)
+}
+
+function hasTimeSeriesData(items: StatsTimeSeriesPoint[]) {
+  return items.some((item) => item.count > 0)
+}
+
+const topCategories = computed(() =>
+  [...statsStore.itemsByCategory].sort((a, b) => b.count - a.count).slice(0, 5),
+)
+
+const topPurchasePlaces = computed(() =>
+  [...statsStore.itemsByPurchasePlace].sort((a, b) => b.count - a.count).slice(0, 5),
+)
+
+const topCollectionsByValue = computed(() =>
+  [...statsStore.itemsByCollection].sort((a, b) => b.totalValue - a.totalValue).slice(0, 5),
+)
+
+const topCollections = computed(() =>
+  [...statsStore.itemsByCollection].sort((a, b) => b.count - a.count).slice(0, 5),
+)
 </script>
 
 <template>
@@ -137,9 +164,9 @@ onMounted(async () => {
           <div
             class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
           >
-            <div>
+            <!-- <div>
               <h2 class="card-title mb-0">Acquisitions par mois</h2>
-            </div>
+            </div> -->
 
             <div>
               <label for="dashboard-year" class="visually-hidden"> Année </label>
@@ -157,10 +184,13 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-
-        <div class="card-body">
+        <ChartCard
+          title="Acquisitions par mois"
+          :has-data="hasTimeSeriesData(statsStore.itemsByMonth)"
+          empty-message="Aucune acquisition pour cette année."
+        >
           <MonthlyAcquisitionsChart :points="statsStore.itemsByMonth" />
-        </div>
+        </ChartCard>
       </div>
 
       <div class="row">
@@ -171,20 +201,20 @@ onMounted(async () => {
             </div>
 
             <div class="card-body">
-              <DistributionChart label="Objets" :items="statsStore.itemsByCollection" />
+              <DistributionChart label="Objets" :items="topCollections" />
             </div>
           </div>
         </div>
 
         <div class="col-xl-6">
           <div class="card mb-4">
-            <div class="card-header">
-              <h2 class="card-title mb-0">Objets par catégorie</h2>
-            </div>
-
-            <div class="card-body">
-              <DistributionChart label="Objets" :items="statsStore.itemsByCategory" />
-            </div>
+            <ChartCard
+              title="Top 5 catégories"
+              :has-data="hasGroupData(topCategories)"
+              empty-message="Aucune catégorie à afficher."
+            >
+              <DistributionChart label="Objets" :items="topCategories" />
+            </ChartCard>
           </div>
         </div>
       </div>
@@ -192,25 +222,25 @@ onMounted(async () => {
       <div class="row">
         <div class="col-xl-6">
           <div class="card mb-4">
-            <div class="card-header">
-              <h2 class="card-title mb-0">Répartition par statut</h2>
-            </div>
-
-            <div class="card-body">
+            <ChartCard
+              title="Répartition par statut"
+              :has-data="hasGroupData(statsStore.itemsByStatus)"
+              empty-message="Aucun statut à analyser pour le moment."
+            >
               <StatusChart :items="statsStore.itemsByStatus" />
-            </div>
+            </ChartCard>
           </div>
         </div>
 
         <div class="col-xl-6">
           <div class="card mb-4">
-            <div class="card-header">
-              <h2 class="card-title mb-0">Valeur estimée par collection</h2>
-            </div>
-
-            <div class="card-body">
-              <CollectionValueChart :items="statsStore.itemsByCollection" />
-            </div>
+            <ChartCard
+              title="Collections les plus valorisées"
+              :has-data="hasGroupData(topCollectionsByValue)"
+              empty-message="Aucune valeur estimée disponible."
+            >
+              <CollectionValueChart :items="topCollectionsByValue" />
+            </ChartCard>
           </div>
         </div>
       </div>
@@ -218,13 +248,13 @@ onMounted(async () => {
       <div class="row">
         <div class="col-xl-6">
           <div class="card mb-4">
-            <div class="card-header">
-              <h2 class="card-title mb-0">Objets par lieu d’achat</h2>
-            </div>
-
-            <div class="card-body">
-              <DistributionChart label="Objets" :items="statsStore.itemsByPurchasePlace" />
-            </div>
+            <ChartCard
+              title="Top 5 lieux d’achat"
+              :has-data="hasGroupData(topPurchasePlaces)"
+              empty-message="Aucun lieu d’achat à afficher."
+            >
+              <DistributionChart label="Objets" :items="topPurchasePlaces" />
+            </ChartCard>
           </div>
         </div>
 
@@ -237,6 +267,21 @@ onMounted(async () => {
             <div class="card-body">
               <YearlyAcquisitionsChart :points="statsStore.itemsByYear" />
             </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="card-title mb-0">Derniers objets ajoutés</h2>
+
+            <RouterLink to="/items" class="btn btn-sm btn-outline-primary ms-auto">
+              Voir tous les objets
+              <i class="bi bi-arrow-right ms-1" aria-hidden="true" />
+            </RouterLink>
+          </div>
+
+          <div class="card-body">
+            <RecentItems :items="statsStore.recentItems" />
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ package com.myshelf.apiMyshelf.repository;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -98,4 +99,15 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
         order by period
         """, nativeQuery = true)
     List<Object[]> itemsByMonth(@Param("email") String email, @Param("year") int year);
+
+    @Query("""
+        SELECT i
+        FROM Item i
+        WHERE i.collection.owner.email = :email
+        ORDER BY i.createdAt DESC
+    """)
+    List<Item> findRecentItemsByOwnerEmail(
+        @Param("email") String email,
+        Pageable pageable
+    );
 }

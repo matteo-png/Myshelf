@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.myshelf.apiMyshelf.dto.item.ItemResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsGroupCountResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsOverviewResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsTimeSeriesPointResponse;
@@ -29,19 +30,22 @@ public class StatsService {
     private final TagRepository tagRepository;
     private final PurchasePlaceRepository purchasePlaceRepository;
     private final CurrentUserService currentUserService;
+    private final ItemService itemService;
 
     public StatsService(ItemRepository itemRepository,
                         CollectionRepository collectionRepository,
                         CategoryRepository categoryRepository,
                         TagRepository tagRepository,
                         PurchasePlaceRepository purchasePlaceRepository,
-                    CurrentUserService currentUserService) {
+                    CurrentUserService currentUserService,
+                ItemService itemService) {
         this.itemRepository = itemRepository;
         this.collectionRepository = collectionRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
         this.purchasePlaceRepository = purchasePlaceRepository;
         this.currentUserService = currentUserService;
+        this.itemService = itemService;
     }
 
     public StatsOverviewResponse overview() {
@@ -131,5 +135,7 @@ public class StatsService {
     }
     return out;
     }
-    
+    public List<ItemResponse> recentItems() {
+    return itemService.getRecentItems(5);
+    }
 }

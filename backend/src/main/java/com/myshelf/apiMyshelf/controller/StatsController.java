@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myshelf.apiMyshelf.dto.item.ItemResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsGroupCountResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsOverviewResponse;
 import com.myshelf.apiMyshelf.dto.stats.StatsTimeSeriesPointResponse;
@@ -57,5 +58,10 @@ public class StatsController {
     @GetMapping("/items-by-month")
     public ResponseEntity<List<StatsTimeSeriesPointResponse>> itemsByMonth(@RequestParam int year) {
         return ResponseEntity.ok(statsService.itemsByMonth(year));
+    }
+    
+    @GetMapping("/recent-items")
+    public ResponseEntity<List<ItemResponse>> recentItems() {
+    return ResponseEntity.ok(statsService.recentItems());
     }
 }

@@ -28,17 +28,10 @@ withDefaults(
       <i class="bi" :class="icon" aria-hidden="true" />
     </div>
 
-    <RouterLink
-      v-if="route"
-      :to="route"
-      class="small-box-footer link-light"
-    >
+    <RouterLink v-if="route" :to="route" class="small-box-footer link-light">
       {{ linkLabel }}
 
-      <i
-        class="bi bi-arrow-right-circle ms-1"
-        aria-hidden="true"
-      />
+      <i class="bi bi-arrow-right-circle ms-1" aria-hidden="true" />
     </RouterLink>
   </div>
 </template>
